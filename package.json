@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-url-namer",
 	"version": "1.0.1",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This plugin retrieves the HTML title to name the unnamed URL link.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
