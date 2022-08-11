@@ -7,7 +7,7 @@ This is a plugin for Obsidian (https://obsidian.md), that retrieves the HTML tit
 Select the raw URL text, simply execute "Name the selected URL" command.
 Easier if you bind the command to a keyboard shortcut.
 
-![demo](demo.gif)
+![demo](demo/demo.gif)
 
 ## Compilation
 
