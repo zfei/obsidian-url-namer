@@ -17,4 +17,4 @@ Easier if you bind the command to a keyboard shortcut.
 
 ## Installation
 
-- After compiled, copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/obsidian-url-namer/`.
+- After compiled, rename the `dist` directory to `obsidian-url-namer` and move it into the vault's plugin directory `VaultFolder/.obsidian/plugins/`.
