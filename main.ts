@@ -1,32 +1,23 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting } from 'obsidian';
 
-export default class MyPlugin extends Plugin {
+export default class UrlNamer extends Plugin {
 
-    urlFetcher: UrlFetcher = new UrlFetcher();
     modal: MsgModal = new MsgModal(this.app);
 
     async onload() {
         this.addCommand({
             id: 'url-namer-selection',
-            name: 'Name the selected URL',
+            name: 'Name the URL links in the selected text',
             editorCallback: (editor: Editor, view: MarkdownView) => {
-                const selectedText = editor.getSelection();
-
-                if (!this.urlFetcher.isValidUrl(selectedText)) {
-                    new Notice(`${selectedText} is not a valid URL.`);
-                    return;
-                }
-
-                this.urlFetcher.fetchTitle(selectedText)
-                    .then(title => {
-                        editor.replaceSelection(`[${title}](${selectedText})`);
-                        new Notice(`Named the URL ${title}`);
+                UrlTagger.getTaggedText(editor.getSelection())
+                    .then(taggedText => {
+                        editor.replaceSelection(taggedText);
                     })
                     .catch(e => this.modal.showMsg(e.message));
             }
         });
     }
-    
+
 }
 
 class MsgModal extends Modal {
@@ -35,7 +26,7 @@ class MsgModal extends Modal {
         super(app);
     }
 
-    msg: string = 'Woah!';
+    msg: string;
 
     showMsg(theMsg: string) {
         this.msg = theMsg;
@@ -54,9 +45,34 @@ class MsgModal extends Modal {
 
 }
 
-class UrlFetcher {
+class UrlTagger {
 
-    isValidUrl(s: string): boolean {
+    static rawUrlPattern = /(?<!\]\(\s*)(?<=\s|\(|\[|^)(?:https?:\/\/)?[a-zA-Z0-9]+[a-zA-Z0-9\-_.]*\.[a-z]{2,6}[^\s]*\b/gim;
+
+    static async getTaggedText(selectedText: string) {
+        const promises: any[] = [];
+
+        selectedText.replace(UrlTagger.rawUrlPattern, match => {
+            const promise = UrlTitleFetcher.getNamedUrlTag(match);
+            promises.push(promise);
+            return match;
+        });
+
+        const namedTags = await Promise.all(promises);
+
+        new Notice(`Processed ${namedTags.length} urls.`);
+
+        return selectedText.replace(UrlTagger.rawUrlPattern, () => namedTags.shift());
+    }
+
+}
+
+class UrlTitleFetcher {
+
+    static htmlTitlePattern = /<title>([^<]*)<\/title>/im;
+    static wxTitlePattern = /<meta property="og:title" content="([^<]*)" \/>/im;
+
+    static isValidUrl(s: string): boolean {
         try {
             new URL(s);
             return true;
@@ -65,23 +81,35 @@ class UrlFetcher {
         }
     };
 
-    parseTitle(url: string, body: string): string {
+    static parseTitle(url: string, body: string): string {
         let match = url.includes('mp.weixin.qq.com') ?
-            body.match(/<meta property="og:title" content="([^<]*)" \/>/im)
-            : body.match(/<title>([^<]*)<\/title>/im);
+            body.match(this.wxTitlePattern)
+            : body.match(this.htmlTitlePattern);
+
         if (!match || typeof match[1] !== 'string') {
             throw new Error('Unable to parse the title tag');
         }
-        console.log(match);
+
         return match[1];
     }
 
-    async fetchTitle(url: string): Promise<string> {
-        const res = await requestUrl({ url: url });
-        const body = res.text;
-        const title = this.parseTitle(url, body);
-        console.log(title);
-        return title;
+    static async getNamedUrlTag(url: string): Promise<string> {
+        const reqUrl = url.startsWith('http') ? url : `http://${url}`;
+
+        if (!this.isValidUrl(reqUrl)) {
+            new Notice(`${url} is not a valid URL.`);
+            return url;
+        }
+
+        try {
+            const res = await requestUrl({ url: reqUrl });
+            const body = res.text;
+            const title = this.parseTitle(url, body);
+            return `[${title}](${url})`;
+        } catch (error) {
+            new Notice(`Error handling URL ${url}: ${error}`);
+            return url;
+        }
     }
 
 }

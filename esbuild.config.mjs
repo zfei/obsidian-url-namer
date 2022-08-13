@@ -58,7 +58,7 @@ esbuild.build({
 	treeShaking: true,
 	outfile: `${distDir}/main.js`,
 	plugins: [
-		esbuildCommands({ onSuccess: `cp -u ${currentDir}/manifest.json ${distDir}/manifest.json` }),
-		esbuildCommands({ onSuccess: `cp -u ${currentDir}/styles.css ${distDir}/styles.css` }),
+		esbuildCommands({ onSuccess: `cp ${currentDir}/manifest.json ${distDir}/manifest.json` }),
+		esbuildCommands({ onSuccess: `cp ${currentDir}/styles.css ${distDir}/styles.css` }),
 	],
 }).catch(() => process.exit(1));

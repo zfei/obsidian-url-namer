@@ -3,7 +3,7 @@
     "name": "URL Namer",
     "version": "1.0.1",
     "minAppVersion": "0.12.0",
-    "description": "This plugin retrieves the HTML title to name the unnamed URL link.",
+    "description": "This plugin retrieves the HTML titles to name the raw URL links.",
     "author": "zfei",
     "authorUrl": "https://github.com/zfei/obsidian-url-namer",
     "isDesktopOnly": false
