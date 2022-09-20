@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, requestUrl } from 'obsidian';
 
 export default class UrlNamer extends Plugin {
 
@@ -9,9 +9,11 @@ export default class UrlNamer extends Plugin {
             id: 'url-namer-selection',
             name: 'Name the URL links in the selected text',
             editorCallback: (editor: Editor, view: MarkdownView) => {
+                const loadingIndicator = new Notice('Fetching titles for selected text...', 0);
                 UrlTagger.getTaggedText(editor.getSelection())
                     .then(taggedText => {
                         editor.replaceSelection(taggedText);
+                        loadingIndicator.hide();
                     })
                     .catch(e => this.modal.showMsg(e.message));
             }
@@ -103,6 +105,10 @@ class UrlTitleFetcher {
 
         try {
             const res = await requestUrl({ url: reqUrl });
+            if (res.status != 200) {
+                throw new Error(`status code ${res.status}`);
+            }
+
             const body = res.text;
             const title = this.parseTitle(url, body);
             return `[${title}](${url})`;
