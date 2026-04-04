@@ -2,14 +2,15 @@
 
 An Obsidian plugin that converts plain URLs in selected text into Markdown links using each page's title.
 
-I forked this from the unmaintained [original](https://github.com/zfei/obsidian-url-namer) `obsidian-url-namer`. 
-The improvements I made to it are
-- Modernize the Typescript code
-- Update this readme
-- Add an option to name URLs as you paste them (off by default, enable in the plugin settings)
-- Add a check to gracefully fail when the user is offline.
+## What's New in v1.1.0
 
-**It is not very likely that I will spend any time maintaining this plugin. I will submit a PR to the original, if it gets merged, great, otherwise, please use at your own risk, or fork and develop further.**
+Thanks to [mvexel](https://github.com/mvexel) for contributing these improvements:
+
+- Modernized TypeScript code
+- Added option to auto-name URLs on paste (enable in Settings -> URL Namer)
+- Added offline detection with graceful fallback
+- Improved title extraction (supports `og:title`, `twitter:title`)
+- Updated build tooling
 
 ## Usage
 
