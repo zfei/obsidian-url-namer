@@ -1,34 +1,67 @@
 # Obsidian URL Namer
 
-This is a plugin for Obsidian (https://obsidian.md), that retrieves the HTML titles to name the raw URL links.
+An Obsidian plugin that converts plain URLs in selected text into Markdown links using each page's title.
+
+I forked this from the unmaintained [original](https://github.com/zfei/obsidian-url-namer) `obsidian-url-namer`. 
+The improvements I made to it are
+- Modernize the Typescript code
+- Update this readme
+- Add an option to name URLs as you paste them (off by default, enable in the plugin settings)
+- Add a check to gracefully fail when the user is offline.
+
+**It is not very likely that I will spend any time maintaining this plugin. I will submit a PR to the original, if it gets merged, great, otherwise, please use at your own risk, or fork and develop further.**
 
 ## Usage
 
-Select the text that contains the URLs to be named, execute the command *Name the URL links in the selected text*.
+1. Select text that contains one or more plain URLs.
+2. Run the command `Name the URL links in the selected text`.
 
-It's recommended to name few URLs at a time. In the case when the URL requests are taking some time, please **DO NOT** change the text selection or the content itself, before the command is done. Otherwise, the eventual result will be out of order.
+Notes:
+- Process a small batch of URLs at a time for best reliability.
+- While the command is running, do not edit or reselect the text.
+- URLs that are already inside Markdown links (for example `[label](https://example.com)`) are skipped.
+- Optional: enable **Settings -> URL Namer -> Auto-name links on paste** to convert pasted plain-text URLs automatically.
+- If Obsidian is offline, the plugin keeps links unchanged and shows a single notice.
 
-Easier with the command binded to a keyboard shortcut.
+![Demo](demo/url-namer-demo.gif)
 
-![demo](demo/url-namer-demo.gif)
+## Development
 
-## Compilation
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run build` to compile, or `npm run dev` to start compilation in watch mode.
+- `npm install`: install dependencies.
+- `npm run dev`: build in watch mode.
+- `npm run build`: run TypeScript checks and create a production bundle (`main.js`).
+- `npm run lint`: run ESLint.
+- `npm run smoke:title -- https://example.com`: quickly test title extraction for a URL.
 
 ## Installation
 
-- After compiled, rename the `dist` directory to `obsidian-url-namer` and move it into the vault's plugin directory `VaultFolder/.obsidian/plugins/`.
+### From source (manual)
 
-# Customization
+1. Build the plugin with `npm run build`.
+2. Create (or open) your vault plugin folder:
+   `VaultFolder/.obsidian/plugins/url-namer/`
 
-Currently the regex for URL matching is hard coded in `main.ts/UrlTagger.rawUrlPattern`. The built-in URL regex pattern can be tested here: https://regexr.com/6rr0c.
+> Use **Vault switcher -> Manage vaults** to see the exact local vault path.
 
-By default, the title is got from the `<title>` tag from the HTML source of the URL. However, often times, the content of a page is lazy-loaded, and the title will have to be inferred from the page-load parameters. In such cases, there needs to be site-specific title regex to deal with this.
+3. Copy these files into that folder:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css` (if present)
+4. In Obsidian, open **Settings -> Community plugins**, refresh, and enable **URL Namer**.
 
-# Future Development
+## Customization
 
-- Parametrize the URL regex pattern into the plugin settings.
-- Parametrize site-specific title regex into the plugin settings.
+The URL-matching regex is currently hard-coded in `main.ts` as `UrlTagger.rawUrlPattern`.
+
+Title extraction defaults to the HTML `<title>` tag. For sites that rely on custom metadata, site-specific parsing may be required (for example the existing WeChat `og:title` handling).
+
+## Known Limitations
+
+- Some websites block requests or return non-HTML content.
+- JavaScript-rendered pages may not expose a useful title in the initial response.
+- The plugin currently has no user settings for regex or per-site parsing rules.
+
+## Future Development
+
+- Move URL regex configuration into plugin settings.
+- Add configurable site-specific title extraction rules.

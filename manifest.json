@@ -1,10 +1,10 @@
 {
-    "id": "url-namer",
-    "name": "URL Namer",
-    "version": "1.0.1",
-    "minAppVersion": "0.12.0",
-    "description": "This plugin retrieves the HTML titles to name the raw URL links.",
-    "author": "zfei",
-    "authorUrl": "https://github.com/zfei/obsidian-url-namer",
-    "isDesktopOnly": false
+	"id": "url-namer-ng",
+	"name": "URL Namer Next Generation",
+	"version": "1.0.2",
+	"minAppVersion": "0.12.0",
+	"description": "This plugin retrieves the HTML titles to name the raw URL links. Based on the original URL Namer plugin by zfei, which is no longer maintained.",
+	"author": "mvexel",
+	"authorUrl": "https://github.com/mvexel/obsidian-url-namer",
+	"isDesktopOnly": false
 }
