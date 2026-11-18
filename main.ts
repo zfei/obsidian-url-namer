@@ -18,6 +18,16 @@ const DEFAULT_SETTINGS: UrlNamerSettings = {
 	autoNameUrlsOnPaste: false,
 };
 
+const NAMED_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&apos;': "'",
+  '&quot;': '"',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&nbsp;': ' ',
+};
+
+
 export default class UrlNamer extends Plugin {
 	settings: UrlNamerSettings;
 
@@ -264,18 +274,36 @@ class UrlTitleFetcher {
 		}
 	}
 
+	static unescapeHtmlEntities(text: string): string {
+		return (
+			text
+			// 1. Replace common named entities (case-insensitive)
+			.replace(/&(amp|apos|quot|lt|gt|nbsp);/gi, (match: string) => {
+				return NAMED_ENTITIES[match.toLowerCase()] ?? match;
+			})
+			// 2. Replace decimal numeric entities
+			.replace(/&#(\d+);/g, (_match: string, dec: string) => {
+				return String.fromCodePoint(Number(dec));
+			})
+			// 3. Replace hexadecimal numeric entities with explicit string types
+			.replace(/&#x([0-9a-f]+);/gi, (_match: string, hex: string) => {
+				return String.fromCodePoint(parseInt(hex, 16));
+			})
+		);
+	}
+
 	static parseTitle(reqUrl: string, body: string): string {
 		const titleMatch = body.match(this.htmlTitlePattern);
 		if (titleMatch && typeof titleMatch[1] === "string") {
 			const htmlTitle = titleMatch[1].trim();
 			if (htmlTitle.length > 0) {
-				return htmlTitle;
+				return this.unescapeHtmlEntities(htmlTitle);
 			}
 		}
 
 		const metaTitle = this.parseMetaTitle(body);
 		if (metaTitle) {
-			return metaTitle;
+			return this.unescapeHtmlEntities(metaTitle);
 		}
 
 		throw new Error(

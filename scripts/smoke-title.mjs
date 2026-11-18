@@ -5,6 +5,33 @@ import process from "node:process";
 const htmlTitlePattern = /<title[^>]*>\s*([\s\S]*?)\s*<\/title>/im;
 const metaTagPattern = /<meta\b[^>]*>/gim;
 const metaAttrPattern = /([a-zA-Z_:][a-zA-Z0-9:._-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
+const NAMED_ENTITIES = {
+  '&amp;': '&',
+  '&apos;': "'",
+  '&quot;': '"',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&nbsp;': ' ',
+};
+
+export function unescapeHtmlEntities(text) {
+  return (
+    text
+      // 1. Replace common named entities (case-insensitive)
+      .replace(/&(amp|apos|quot|lt|gt|nbsp);/gi, (match) => {
+        return NAMED_ENTITIES[match.toLowerCase()] ?? match;
+      })
+      // 2. Replace decimal numeric entities (e.g., &#39;, &#160;)
+      .replace(/&#(\d+);/g, (_, dec) => {
+        return String.fromCodePoint(Number(dec));
+      })
+      // 3. Replace hexadecimal numeric entities (e.g., &#x27;, &#xA0;)
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
+        return String.fromCodePoint(parseInt(hex, 16));
+      })
+  );
+}
+
 
 function parseMetaTitle(body) {
 	const metaTags = body.match(metaTagPattern);
@@ -57,7 +84,7 @@ const reqUrl = hasScheme
 try {
 	const response = await fetch(reqUrl);
 	const body = await response.text();
-	const title = parseTitle(body);
+	const title = unescapeHtmlEntities(parseTitle(body));
 
 	console.log(`Status: ${response.status}`);
 	console.log(`URL: ${reqUrl}`);
